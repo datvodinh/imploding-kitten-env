@@ -11,18 +11,25 @@ Phase 1: Main turn
     Action 7: Steal a random card from other player (two of a kind).
     Action 8: Name the card you want from other player(three of a kind).
     Action 9: take any card from Discard Pile (5 different cards).
+    Action 11(51): Reverse
+    Action 12(52): Draw From Bottom
+    Action 13(53): Alter the Future
+    Action 14(54): Targeted Attack
 
 Phase 2: Nope turn.
     Action 0: Nope
     Action 10: Not Nope
 
 
-Phase 3: Steal some card
-        Action 11 to 14:  choose player to take.
+Phase 3: choose PLayer
+        Action 15 to 19:  choose player to take / attack. (5 action)
 Phase 4: choose card to give / take
     Action 3: 
-        Action 15 to 26: player been chosen choose a card to give..
+        Action 20 to 36: player been chosen choose a card to give.. (17 action)
     Action 8:
-        Action 27 to 38: ask the card you want from other player
+        Action 37 to 53: ask the card you want from other player (17 action)
     Action 9:
-        Action 39 to 50: choose card from Discard Pile
+        Action 54 to 70: choose card from Discard Pile (17 action)
+Phase 5: Alter the Future
+        3! = 6 combination of card
+        Action 71 to 76: All 6 combination to Alter.  (6 action)

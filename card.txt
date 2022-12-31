@@ -1,4 +1,4 @@
-Index[0:56]: 56 card: 13 type
+Index[0:56]: 76 card: 19 type
     [0:5]: Nope
     [5:9]: Attack
     [9:13]: Skip
@@ -10,5 +10,11 @@ Index[0:56]: 56 card: 13 type
     [34:38]: BEARD CAT
     [38:42]: HAIRY POTATO CAT
     [42:46]: CATERMELON
-    [46:52]: Defuse
-    [52:56]: Exploding kitten
+    [46:50]: Reverse
+    [50:54]: Draw From Bottom
+    [54:58]:  Feral Cat
+    [58:62]: Alter the Future
+    [62:65]: Targeted Attack
+    [65:71]: Defuse
+    [71:75]: Exploding kitten
+    [75]: Imploding Kitten
