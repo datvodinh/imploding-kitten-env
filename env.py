@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit,jit
 import numba
 from numba.typed import List
 import sys
@@ -719,7 +719,7 @@ def normal_main(listAgent, times, perData):
     return numWin, perData
 
 @njit
-def one_game_numba(p0,p1,p2,p3,p4,p5,perData,pIdOrder):
+def numba_one_game(p0,p1,p2,p3,p4,p5,perData,pIdOrder):
     env,draw_pile,discard_pile = initEnv()
     for _ in range(getAgentSize()):
         dataOnePlayer = List()
@@ -772,15 +772,13 @@ def one_game_numba(p0,p1,p2,p3,p4,p5,perData,pIdOrder):
     return winner, perData
 
 
-
-
 @njit
 def numba_main(p0,p1,p2, p3,p4,p5, times, perData):
     numWin = np.full(7, 0)
     pIdOrder = np.arange(6)
     for _ in range(times):
         np.random.shuffle(pIdOrder)
-        winner, perData = one_game_numba(p0, p1, p2, p3, p4,p5, perData, pIdOrder)
+        winner, perData = numba_one_game(p0, p1, p2, p3, p4,p5, perData, pIdOrder)
         if winner == -1:
             numWin[6] += 1
         else:
@@ -793,3 +791,100 @@ def random_player(state,per):
     action = np.random.choice(list_action)
     #print(list_action)
     return action,per
+
+@njit
+def one_game_numba(p0,pIdOrder,per_player,per1,per2,per3,per4,per5,p1,p2,p3,p4,p5):
+    env,draw_pile,discard_pile = initEnv()
+    for _ in range(getAgentSize()):
+        dataOnePlayer = List()
+        dataOnePlayer.append(np.array([[0.]]))
+    winner = -1
+    turn = 0
+    while True:
+        turn +=1
+        phase = env[89]
+        main_id = env[77]
+        nope_id = env[95]
+        last_action = env[94]
+        if phase==0:
+            pIdx = int(main_id)
+        elif phase==1:
+            pIdx = int(nope_id)
+        elif phase==2:
+            pIdx = int(main_id)
+        elif phase==3:
+            if last_action==3:
+                pIdx = int(env[96])
+            else:
+                pIdx = int(main_id)
+        elif phase==4:
+            pIdx = int(main_id)
+        if pIdOrder[pIdx] == -1:
+            action, perData = p0(getAgentState(env,draw_pile,discard_pile), per_player)
+        elif pIdOrder[pIdx] == 1:
+            action, perData = p1(getAgentState(env,draw_pile,discard_pile), per1)
+        elif pIdOrder[pIdx] == 2:
+            action, perData = p2(getAgentState(env,draw_pile,discard_pile), per2)
+        elif pIdOrder[pIdx] == 3:
+            action, perData = p3(getAgentState(env,draw_pile,discard_pile), per3)
+        elif pIdOrder[pIdx] == 4:
+            action, perData = p4(getAgentState(env,draw_pile,discard_pile), per4)
+        elif pIdOrder[pIdx] == 5:
+            action, perData = p5(getAgentState(env,draw_pile,discard_pile), per5)
+        env,draw_pile,discard_pile = stepEnv(env,draw_pile,discard_pile,action)
+        
+        winner = checkEnded(env)
+        if winner != -1 or turn>150:
+            break
+    return winner, perData
+
+@jit()
+def n_game_numba(p0, num_game, per_player, list_other, per1, per2, per3, per4, per5, p1, p2, p3, p4, p5):
+    win = 0
+    for _n in range(num_game):
+        np.random.shuffle(list_other)
+        winner,per_player  = one_game_numba(p0, list_other, per_player, per1, per2, per3, per4, per5, p1, p2, p3, p4, p5)
+        win += winner
+    return win, per_player
+
+import importlib.util, json, sys
+from setup import SHOT_PATH
+
+def load_module_player(player):
+    return  importlib.util.spec_from_file_location('Agent_player', f"{SHOT_PATH}Agent/{player}/Agent_player.py").loader.load_module()
+
+@njit()
+def random_Env(p_state, per):
+    arr_action = getValidActions(p_state)
+    arr_action = np.where(arr_action == 1)[0]
+    act_idx = np.random.randint(0, len(arr_action))
+    return arr_action[act_idx], per
+
+def numba_main_2(p0, n_game, per_player, level, *args):
+    list_other = np.array([1, 2, 3, 4, 5, -1])
+    if level == 0:
+        per_agent_env = np.array([0])
+        return n_game_numba(p0, n_game, per_player, list_other, per_agent_env, per_agent_env, per_agent_env, random_Env, random_Env, random_Env)
+    else:
+        env_name = sys.argv[1]
+        if len(*args) > 0:
+            dict_level = json.load(open(f'{SHOT_PATH}Log/check_system_about_level.json'))
+        else:
+            dict_level = json.load(open(f'{SHOT_PATH}Log/level_game.json'))
+
+        if str(level) not in dict_level[env_name]:
+            raise Exception('Hiện tại không có level này') 
+        lst_agent_level = dict_level[env_name][str(level)][2]
+
+        p1 = load_module_player(lst_agent_level[0]).Test
+        p2 = load_module_player(lst_agent_level[1]).Test
+        p3 = load_module_player(lst_agent_level[2]).Test
+        p4 = load_module_player(lst_agent_level[3]).Test
+        p5 = load_module_player(lst_agent_level[4]).Test
+        per_level = []
+        for id in range(getAgentSize()-1):
+            data_agent_env = list(np.load(f'{SHOT_PATH}Agent/{lst_agent_level[id]}/Data/{env_name}_{level}/Train.npy',allow_pickle=True))
+            per_level.append(data_agent_env)
+        
+        return n_game_numba(p0, n_game, per_player, list_other, per_level[0], per_level[1], per_level[2],per_level[3],per_level[4], p1, p2, p3,p4,p5)
+        
