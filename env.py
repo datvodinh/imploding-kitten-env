@@ -712,7 +712,7 @@ def normal_main(listAgent, times, perData):
         shuffledListAgent = [listAgent[i] for i in pIdOrder]
         winner, perData = one_game(shuffledListAgent, perData)
         if winner == -1:
-            numWin[-1] += 1
+            numWin[6] += 1
         else:
             numWin[pIdOrder[winner]] += 1
             #print(winner)
