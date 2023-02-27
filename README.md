@@ -1,8 +1,8 @@
 ## :dart: Imploding Kitten
 1.   `Speed`:  **100k Game**: ~150s
-2. `Right Form`: **Tested**
-3. `Game Rule`: **Checked**
-4. `Infinite loop check`: **Tested** with 100k game
+2. `Right Form`: **Tested ✓**
+3. `Game Rule`: **Checked ✓**
+4. `Infinite loop check`: **Tested** with 100k game ✓
 
 ## :globe_with_meridians: ENV_state
 ```
