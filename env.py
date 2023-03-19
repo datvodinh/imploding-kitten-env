@@ -3,16 +3,16 @@ from numba import njit,jit
 import numba
 from numba.typed import List
 import sys
-@jit
+@njit
 def getActionSize():
     return 77
-@jit
+@njit
 def getStateSize():
     return 128
-@jit
+@njit
 def getAgentSize():
     return 6
-@jit
+@njit
 def initEnv():
     """init env"""
     env = np.zeros(99)
@@ -41,11 +41,11 @@ def initEnv():
     env[98] = 0 # state of the Imploding Kitten
     return env,draw_pile,discard_pile
 
-@jit
+@njit
 def getNumCard(env,idx):
     """Get the number of card with given type"""
     return np.where(env==idx)[0].shape[0]
-@jit
+@njit
 def getAllNumCard(env,idx):
     """Get all the number of card """
     state = np.zeros(17)
@@ -58,7 +58,7 @@ def getAllNumCard(env,idx):
     state[15] = getNumCard(env[62:65],idx)
     state[16] = getNumCard(env[65:71],idx)
     return state
-@jit
+@njit
 def getCardType(id):
     cards = List([np.arange(0.,5.),np.arange(5.,9.),np.arange(9.,13.),np.arange(13.,17.),np.arange(17.,21.),np.arange(21.,26.),np.arange(26.,30.),np.arange(30.,34.),np.arange(34.,38.),np.arange(38.,42.),np.arange(42.,46.),np.arange(46.,50.),np.arange(50.,54.),np.arange(54.,58.),np.arange(58.,62.),np.arange(62.,65.),np.arange(65.,71.),np.arange(71.,75.),np.arange(75.,76.)])
     i = 0
@@ -66,7 +66,7 @@ def getCardType(id):
         if id in c:
             return i
         i+=1
-@jit
+@njit
 def visualCard(card):
     arr = []
     lst = ['Nope','Attack','Skip','Favor','Shuffle','See the future','TCT','RRC','BC','HPC','CTM','Reverse','Draw Bottom','Feral Cat','Alter the Future','Targeted Attack','Defuse','Exploding Kitten','Imploding Kitten']
@@ -74,13 +74,13 @@ def visualCard(card):
         if i!=-1:
             arr.append(lst[int(getCardType(i))])
     return arr
-@jit
+@njit
 def getCardRange(type_card):
     """Get the range of the card given type"""
     cards = List([np.arange(0.,5.),np.arange(5.,9.),np.arange(9.,13.),np.arange(13.,17.),np.arange(17.,21.),np.arange(21.,26.),np.arange(26.,30.),np.arange(30.,34.),np.arange(34.,38.),np.arange(38.,42.),np.arange(42.,46.),np.arange(46.,50.),np.arange(50.,54.),np.arange(54.,58.),np.arange(58.,62.),np.arange(62.,65.),np.arange(65.,71.),np.arange(71.,75.),np.arange(75.,76.)])
     return cards[type_card].astype(np.int64)[0],cards[type_card].astype(np.int64)[-1]+1
 
-@jit
+@njit
 def getAgentState(env,draw_pile,discard_pile):
     state = np.zeros(getStateSize())
     #get card
@@ -131,7 +131,7 @@ def getAgentState(env,draw_pile,discard_pile):
         state[122+i] = np.where(env[0:76]==env[78+i])[0].shape[0]
     state[127] = draw_pile[18]
     return state
-@jit
+@njit
 def getValidActions(state):
     list_action = np.zeros(getActionSize())
     if state[95]==1:#main turn
@@ -188,7 +188,7 @@ def getValidActions(state):
         list_action[10] = 1
 
     return list_action
-@jit
+@njit
 def checkDefuse(env,discard_pile): # get the Defuse (if player have else -1)
 
     card = np.where(env[65:71]==env[77])[0].astype(np.int64)
@@ -199,7 +199,7 @@ def checkDefuse(env,discard_pile): # get the Defuse (if player have else -1)
         #print('Player ',env[77],' have Defuse!')
         return True
     return False
-@jit
+@njit
 def checkExploding(card): # check if that card is expode or not
     explode = np.array([71.,72.,73.,74.],dtype=np.float64)
     if card in explode:
@@ -207,20 +207,20 @@ def checkExploding(card): # check if that card is expode or not
         return True
     return False
 
-@jit
+@njit
 def checkImploding(card):
     #return true if player draw an Imploding Kitten.
     if card==75:
         #print('Player draw an Imploding Kitten!')
         return True
     return False
-@jit
+@njit
 def nopeTurn(idx,reverse=False):
         if reverse==False:
                 return np.arange(idx+1.,idx+6.) % 6
         else:
                 return np.arange(idx+5.,idx,-1) % 6
-@jit
+@njit
 def changeTurn(env,num_card_draw=1,reverse=False):
     """Change the main turn"""
     if reverse==False:
@@ -246,7 +246,7 @@ def changeTurn(env,num_card_draw=1,reverse=False):
     env[89] = 0 # change phase to 0
     env[91:94] = 0
     return env
-@jit
+@njit
 def drawCard(env,draw_pile,discard_pile,from_bottom=False,change_turn=True):
     """Draw card"""
     #print('Player ',env[77],' draw ', env[90],'card(s)')
@@ -307,12 +307,12 @@ def drawCard(env,draw_pile,discard_pile,from_bottom=False,change_turn=True):
         env[90] = 0
         env = changeTurn(env,1,env[97]==0)
     return env,draw_pile,discard_pile
-@jit
+@njit
 def checkIfNope(env):
     """Return True if the main player's card has been Nope"""
     return env[76]%2==1
 
-@jit
+@njit
 def executeMainAction(env,draw_pile,discard_pile,action):
     """Execute main action if it has not been Nope"""
     #print('Execute main Action!')
@@ -380,7 +380,7 @@ def executeMainAction(env,draw_pile,discard_pile,action):
     
     return env,draw_pile,discard_pile
 
-@jit
+@njit
 def discardCardNormalAction(env,last_action,discard_pile):
     if last_action==0:
         discard_pile[0]+=1
@@ -413,7 +413,7 @@ def discardCardNormalAction(env,last_action,discard_pile):
         env[62:65][np.where(env[62:65]==env[77])[0][0]] = 6
         discard_pile[15]+=1
 
-@jit
+@njit
 def discardCardSpecialAction(env,last_action,discard_pile):
     """Discard card after using special action"""
     all_num_card = getAllNumCard(env,env[77])
@@ -511,7 +511,7 @@ def discardCardSpecialAction(env,last_action,discard_pile):
                 discard_pile[int(type_card)]+=1
 
     return env,discard_pile
-@jit
+@njit
 def idPlayerCanUseNope(env,nope_id,reverse=False):
     """return the id of the player that have the nope card, else -1"""
     main_id = env[77]
@@ -533,7 +533,7 @@ def idPlayerCanUseNope(env,nope_id,reverse=False):
                 return idx
         return main_id
 
-@jit
+@njit
 def stepEnv(env,draw_pile,discard_pile,action):
     phase = env[89]
     main_id = env[77]
@@ -662,13 +662,13 @@ def stepEnv(env,draw_pile,discard_pile,action):
         env[76] = 0
     return env,draw_pile,discard_pile
 
-@jit
+@njit
 def checkEnded(env):
     if np.sum(env[83:89])==1:
         return np.where(env[83:89]==1)[0][0]
     else:
         return -1
-@jit
+@njit
 def getReward(state):
     if state[121] == 0:
         return 0
@@ -676,142 +676,21 @@ def getReward(state):
         return 1
     else:
         return -1
-def one_game(listAgent,perData):
-    env,draw_pile,discard_pile = initEnv()
-    winner = -1
-    turn = 0
-    while True:
-
-        turn +=1
-        phase = env[89]
-        main_id = env[77]
-        nope_id = env[95]
-        last_action = env[94]
-        if phase==0:
-            pIdx = int(main_id)
-        elif phase==1:
-            pIdx = int(nope_id)
-        elif phase==2:
-            pIdx = int(main_id)
-        elif phase==3:
-            if last_action==3:
-                pIdx = int(env[96])
-            else:
-                pIdx = int(main_id)
-        elif phase==4:
-            pIdx = int(main_id)
-
-        action, perData = listAgent[pIdx](getAgentState(env,draw_pile,discard_pile), perData)
-        env,draw_pile,discard_pile = stepEnv(env,draw_pile,discard_pile,action)
-        winner = checkEnded(env)
-        
-        if winner != -1:
-            break
-
-    for i in range(6):
-        env[77] = i
-        act, perData = listAgent[int(env[77])](getAgentState(env,draw_pile,discard_pile), perData)
-    
-    return winner, perData
-def normal_main(listAgent, times, perData):
-    numWin = [0,0,0,0,0,0,0]
-    pIdOrder = [0,1,2,3,4,5]
-    for _ in range(times):
-        np.random.shuffle(pIdOrder)
-        shuffledListAgent = [listAgent[i] for i in pIdOrder]
-        winner, perData = one_game(shuffledListAgent, perData)
-        if winner == -1:
-            numWin[6] += 1
-        else:
-            numWin[pIdOrder[winner]] += 1
-            #print(winner)
-    return numWin, perData
-
-@jit
-def numba_one_game(p0,p1,p2,p3,p4,p5,perData,pIdOrder):
-    env,draw_pile,discard_pile = initEnv()
-    winner = -1
-    turn = 0
-    while True:
-        turn +=1
-        phase = env[89]
-        main_id = env[77]
-        nope_id = env[95]
-        last_action = env[94]
-        if phase==0:
-            pIdx = int(main_id)
-        elif phase==1:
-            pIdx = int(nope_id)
-        elif phase==2:
-            pIdx = int(main_id)
-        elif phase==3:
-            if last_action==3:
-                pIdx = int(env[96])
-            else:
-                pIdx = int(main_id)
-        elif phase==4:
-            pIdx = int(main_id)
-        try:
-            if pIdOrder[pIdx] == 0:
-                action, perData = p0(getAgentState(env,draw_pile,discard_pile), perData)
-            elif pIdOrder[pIdx] == 1:
-                action, perData = p1(getAgentState(env,draw_pile,discard_pile), perData)
-            elif pIdOrder[pIdx] == 2:
-                action, perData = p2(getAgentState(env,draw_pile,discard_pile), perData)
-            elif pIdOrder[pIdx] == 3:
-                action, perData = p3(getAgentState(env,draw_pile,discard_pile), perData)
-            elif pIdOrder[pIdx] == 4:
-                action, perData = p4(getAgentState(env,draw_pile,discard_pile), perData)
-            elif pIdOrder[pIdx] == 5:
-                action, perData = p5(getAgentState(env,draw_pile,discard_pile), perData)
-            env,draw_pile,discard_pile = stepEnv(env,draw_pile,discard_pile,action)
-        except:
-            pass
-        
-        winner = checkEnded(env)
-        if winner != -1 or turn>300:
-            break
-    
-    for p_idx in range(6):
-        env[77] = p_idx
-        p_state = getAgentState(env,draw_pile,discard_pile)
-        if pIdOrder[p_idx] == 0:
-            act, perData = p0(p_state, perData)
-        elif pIdOrder[p_idx] == 1:
-            act, perData = p1(p_state, perData)
-        elif pIdOrder[p_idx] == 2:
-            act, perData = p2(p_state, perData)
-        elif pIdOrder[p_idx] == 3:
-            act, perData = p3(p_state, perData)
-        elif pIdOrder[p_idx] == 4:
-            act, perData = p4(p_state, perData)
-        else:
-            act, perData = p5(p_state, perData)
-        
-    return winner, perData
-
-
-@jit
-def numba_main(p0,p1,p2, p3,p4,p5, times, perData):
-    numWin = [0,0,0,0,0,0,0]
-    pIdOrder = [0,1,2,3,4,5]
-    for _ in range(times):
-        np.random.shuffle(pIdOrder)
-        winner, perData = numba_one_game(p0, p1, p2, p3, p4,p5, perData, pIdOrder)
-        if winner == -1:
-            numWin[6] += 1
-        else:
-            numWin[pIdOrder[winner]] += 1
-    return numWin, perData
-
-@jit
+@njit
 def random_player(state,per):
     list_action  = np.where(getValidActions(state)==1)[0]
     action = np.random.choice(list_action)
     #print(list_action)
     return action,per
 
-@jit
+@njit()
+def bot_lv0(state, perData):
+    validActions = getValidActions(state)
+    arr_action = np.where(validActions==1)[0]
+    idx = np.random.randint(0, arr_action.shape[0])
+    return arr_action[idx], perData
+
+@njit
 def one_game_numba(p0,pIdOrder,per_player,per1,per2,per3,per4,per5,p1,p2,p3,p4,p5):
     env,draw_pile,discard_pile = initEnv()
 
@@ -854,11 +733,20 @@ def one_game_numba(p0,pIdOrder,per_player,per1,per2,per3,per4,per5,p1,p2,p3,p4,p
         if winner != -1 or turn>300:
             break
     for idx in range(6):
+        env[77] = idx
+        if pIdOrder[pIdx] == -1:
+            action, per_player = p0(getAgentState(env,draw_pile,discard_pile), per_player)
+        elif pIdOrder[pIdx] == 1:
+            action, per1 = p1(getAgentState(env,draw_pile,discard_pile), per1)
+        elif pIdOrder[pIdx] == 2:
+            action, per2 = p2(getAgentState(env,draw_pile,discard_pile), per2)
+        elif pIdOrder[pIdx] == 3:
+            action, per3 = p3(getAgentState(env,draw_pile,discard_pile), per3)
+        elif pIdOrder[pIdx] == 4:
+            action, per4 = p4(getAgentState(env,draw_pile,discard_pile), per4)
+        elif pIdOrder[pIdx] == 5:
+            action, per5 = p5(getAgentState(env,draw_pile,discard_pile), per5)
 
-        if pIdOrder[idx] == -1:
-            env[77] = idx
-            p_state = getAgentState(env, draw_pile, discard_pile)
-            act, per_player = p0(p_state, per_player)
     win = False        
     if np.where(pIdOrder == -1)[0][0] == checkEnded(env): 
         win = True
@@ -867,7 +755,7 @@ def one_game_numba(p0,pIdOrder,per_player,per1,per2,per3,per4,per5,p1,p2,p3,p4,p
 
     return win, per_player
 
-@jit()
+@njit()
 def n_game_numba(p0, num_game, per_player, list_other, per1, per2, per3, per4, per5, p1, p2, p3, p4, p5):
     win = 0
     for _n in range(num_game):
@@ -877,53 +765,145 @@ def n_game_numba(p0, num_game, per_player, list_other, per1, per2, per3, per4, p
     return win, per_player
 
 import importlib.util, json, sys
-from setup import SHOT_PATH
+from setup import SHORT_PATH
 
 def load_module_player(player):
-    return  importlib.util.spec_from_file_location('Agent_player', f"{SHOT_PATH}Agent/{player}/Agent_player.py").loader.load_module()
+    return  importlib.util.spec_from_file_location('Agent_player', f"{SHORT_PATH}Agent/{player}/Agent_player.py").loader.load_module()
 
-@jit()
+@njit()
 def random_Env(p_state, per):
     arr_action = getValidActions(p_state)
     arr_action = np.where(arr_action == 1)[0]
     act_idx = np.random.randint(0, len(arr_action))
     return arr_action[act_idx], per
 
-# @jit()
-def numba_main_2(p0, n_game, per_player, level, *args):
-    list_other = np.array([1, 2, 3, 4, 5, -1])
-    if level == 0:
-        per_agent_env = np.array([0])
-        return n_game_numba(p0, n_game, per_player, list_other, per_agent_env, per_agent_env, per_agent_env,per_agent_env,per_agent_env, random_Env, random_Env, random_Env, random_Env,random_Env)
+def numba_main_2(p0, num_game, per_player, level, *args):
+    num_bot = getAgentSize() - 1
+    list_other = np.array([-1] + [i+1 for i in range(num_bot)])
+    try: check_njit = check_run_under_njit(p0, per_player)
+    except: check_njit = False
+
+    if "_level_" not in globals():
+        global _level_
+        _level_ = level
+        init = True
     else:
-        env_name = sys.argv[1]
-        if len(args) > 0:
-            dict_level = json.load(open(f'{SHOT_PATH}Log/check_system_about_level.json'))
+        if _level_ != level:
+            _level_ = level
+            init = True
         else:
-            dict_level = json.load(open(f'{SHOT_PATH}Log/level_game.json'))
+            init = False
 
-        if str(level) not in dict_level[env_name]:
-            raise Exception('Hiện tại không có level này') 
-        lst_agent_level = dict_level[env_name][str(level)][2]
+    if init:
+        global _list_per_level_
+        global _list_bot_level_
+        _list_per_level_ = []
+        _list_bot_level_ = []
 
-        p1 = load_module_player(lst_agent_level[0]).Test
-        p2 = load_module_player(lst_agent_level[1]).Test
-        p3 = load_module_player(lst_agent_level[2]).Test
-        p4 = load_module_player(lst_agent_level[3]).Test
-        p5 = load_module_player(lst_agent_level[4]).Test
-        per_level = []
-        for id in range(getAgentSize()-1):
-            data_agent_env = list(np.load(f'{SHOT_PATH}Agent/{lst_agent_level[id]}/Data/{env_name}_{level}/Train.npy',allow_pickle=True))
-            per_level.append(data_agent_env)
+        if _level_ == 0:
+            _list_per_level_ = [np.array([[0.]], dtype=np.float64) for _ in range(num_bot)]
+            _list_bot_level_ = [bot_lv0 for _ in range(num_bot)]
+        else:
+            env_name = sys.argv[1]
+            if len(args) > 0:
+                dict_level = json.load(open(f'{SHORT_PATH}Log/check_system_about_level.json'))
+            else:
+                dict_level = json.load(open(f'{SHORT_PATH}Log/level_game.json'))
+
+            if str(_level_) not in dict_level[env_name]:
+                raise Exception('Hiện tại không có level này')
+
+            lst_agent_level = dict_level[env_name][str(level)][2]
+            lst_module_level = [load_module_player(lst_agent_level[i]) for i in range(num_bot)]
+            for i in range(num_bot):
+                data_agent_level = np.load(f'{SHORT_PATH}Agent/{lst_agent_level[i]}/Data/{env_name}_{level}/Train.npy',allow_pickle=True)
+                _list_per_level_.append(lst_module_level[i].convert_to_test(data_agent_level))
+                _list_bot_level_.append(lst_module_level[i].Test)
+
+    if check_njit:
+        return n_game_numba(p0, num_game, per_player, list_other,
+                                _list_per_level_[0], _list_per_level_[1], _list_per_level_[2],_list_per_level_[3],_list_per_level_[4],
+                                _list_bot_level_[0], _list_bot_level_[1], _list_bot_level_[2],_list_bot_level_[3],_list_bot_level_[4])
+    else:
+        return n_game_normal(p0, num_game, per_player, list_other,
+                                _list_per_level_[0], _list_per_level_[1], _list_per_level_[2],_list_per_level_[3],_list_per_level_[4],
+                                _list_bot_level_[0], _list_bot_level_[1], _list_bot_level_[2],_list_bot_level_[3],_list_bot_level_[4])
+    
+def one_game_normal(p0,pIdOrder,per_player,per1,per2,per3,per4,per5,p1,p2,p3,p4,p5):
+
+    env,draw_pile,discard_pile = initEnv()
+
+    winner = -1
+    turn = 0
+    while True:
+        turn +=1
+        phase = env[89]
+        main_id = env[77]
+        nope_id = env[95]
+        last_action = env[94]
+        if phase==0:
+            pIdx = int(main_id)
+        elif phase==1:
+            pIdx = int(nope_id)
+        elif phase==2:
+            pIdx = int(main_id)
+        elif phase==3:
+            if last_action==3:
+                pIdx = int(env[96])
+            else:
+                pIdx = int(main_id)
+        elif phase==4:
+            pIdx = int(main_id)
+        if pIdOrder[pIdx] == -1:
+            action, per_player = p0(getAgentState(env,draw_pile,discard_pile), per_player)
+        elif pIdOrder[pIdx] == 1:
+            action, per1 = p1(getAgentState(env,draw_pile,discard_pile), per1)
+        elif pIdOrder[pIdx] == 2:
+            action, per2 = p2(getAgentState(env,draw_pile,discard_pile), per2)
+        elif pIdOrder[pIdx] == 3:
+            action, per3 = p3(getAgentState(env,draw_pile,discard_pile), per3)
+        elif pIdOrder[pIdx] == 4:
+            action, per4 = p4(getAgentState(env,draw_pile,discard_pile), per4)
+        elif pIdOrder[pIdx] == 5:
+            action, per5 = p5(getAgentState(env,draw_pile,discard_pile), per5)
+        env,draw_pile,discard_pile = stepEnv(env,draw_pile,discard_pile,action)
         
-        return n_game_numba(p0, n_game, per_player, list_other, per_level[0], per_level[1], per_level[2],per_level[3],per_level[4], p1, p2, p3,p4,p5)
+        winner = checkEnded(env)
+        if winner != -1 or turn>300:
+            break
+    for idx in range(6):
+        env[77] = idx
+        if pIdOrder[pIdx] == -1:
+            action, per_player = p0(getAgentState(env,draw_pile,discard_pile), per_player)
+        elif pIdOrder[pIdx] == 1:
+            action, per1 = p1(getAgentState(env,draw_pile,discard_pile), per1)
+        elif pIdOrder[pIdx] == 2:
+            action, per2 = p2(getAgentState(env,draw_pile,discard_pile), per2)
+        elif pIdOrder[pIdx] == 3:
+            action, per3 = p3(getAgentState(env,draw_pile,discard_pile), per3)
+        elif pIdOrder[pIdx] == 4:
+            action, per4 = p4(getAgentState(env,draw_pile,discard_pile), per4)
+        elif pIdOrder[pIdx] == 5:
+            action, per5 = p5(getAgentState(env,draw_pile,discard_pile), per5)
 
-@jit
-def random_player1(state,per):
-    list_action  = np.where(getValidActions(state)==1)[0]
-    action = np.random.choice(list_action)
-    #print(state[82:86],state[87:91])
-    if getReward(state) != -1:
-        per += 1
-    # print(getReward(state))
-    return action,per
+    win = False        
+    if np.where(pIdOrder == -1)[0][0] == checkEnded(env): 
+        win = True
+    else: 
+        win = False
+
+    return win, per_player
+
+def n_game_normal(p0, num_game, per_player, list_other, per1, per2, per3, per4, per5, p1, p2, p3, p4, p5):
+    win = 0
+    for _n in range(num_game):
+        np.random.shuffle(list_other)
+        winner,per_player  = one_game_normal(p0, list_other, per_player, per1, per2, per3, per4, per5, p1, p2, p3, p4, p5)
+        win += winner
+    return win, per_player
+
+
+@njit()
+def check_run_under_njit(Agent):
+    return True
+
