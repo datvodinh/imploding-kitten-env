@@ -262,7 +262,7 @@ def changeTurn(env,num_card_draw=1,reverse=False):
     else:
         env[90] = num_card_draw
     env[89] = 0 # change phase to 0
-    env[91:94] = 0
+    env[91:94] = -1
     env[94] = -1
     return env
 @njit
