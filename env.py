@@ -32,7 +32,7 @@ def initEnv():
     env[83:89] = 1 # 0 if lose else 1
     env[89] = 0 #phase [0:main turn, 1:nope turn,2:steal card turn,3:choose/take card turn]
     env[90] = 1 # number of card player env[77] have to draw
-    env[91:94] = [0,0,0] #three card in see the future
+    env[91:94] = [-1,-1,-1] #three card in see the future
     env[94] = -1 # player env[77] last action
     env[95] = env[77]+1
     env[96] = -1 #player chosen in phase 2
@@ -83,6 +83,23 @@ def getCardRange(type_card):
 @njit
 def getAgentState(env,draw_pile,discard_pile):
     state = np.zeros(getStateSize())
+    phase = env[89]
+    main_id = env[77]
+    nope_id = env[95]
+    last_action = env[94]
+    if phase==0:
+        pIdx = int(main_id)
+    elif phase==1:
+        pIdx = int(nope_id)
+    elif phase==2:
+        pIdx = int(main_id)
+    elif phase==3:
+        if last_action==3:
+            pIdx = int(env[96])
+        else:
+            pIdx = int(main_id)
+    elif phase==4:
+        pIdx = int(main_id)
     #get card
     if env[89]==1: #Nope phase
         state[0:17] = getAllNumCard(env,env[95])
@@ -115,11 +132,12 @@ def getAgentState(env,draw_pile,discard_pile):
         state[35] = np.where(draw_pile!=-1)[0].shape[0] #number of card in draw pile
         state[36] = np.where(env[83:89]==1)[0].shape[0]
         state[37] = env[76]%2 #1 if action been Nope else 0
-        for i in range(3):
-            if env[91+i]!=-1:
-                card = np.zeros(19)
-                card[int(getCardType(env[91+i]))] = 1
-                state[37+19*i:56+19*i] = card# three card if use see the future
+        if pIdx == int(main_id):
+            for i in range(3):
+                if env[91+i]!=-1:
+                    card = np.zeros(19)
+                    card[int(getCardType(env[91+i]))] = 1
+                    state[37+19*i:56+19*i] = card# three card if use see the future
         state[95:100][int(env[89])] = 1 #phase
         state[100] = np.maximum(env[90],0) # number of card player have to draw
         if env[94]>=0:
@@ -245,6 +263,7 @@ def changeTurn(env,num_card_draw=1,reverse=False):
         env[90] = num_card_draw
     env[89] = 0 # change phase to 0
     env[91:94] = 0
+    env[94] = -1
     return env
 @njit
 def drawCard(env,draw_pile,discard_pile,from_bottom=False,change_turn=True):
@@ -375,7 +394,7 @@ def executeMainAction(env,draw_pile,discard_pile,action):
     elif action==14: # Targeted Attack
         #print(f'Player {env[77]} use Targeted Attack!')
         env[89] = 2 #choose player to attack
-        
+    env[94] = -1
 
     
     return env,draw_pile,discard_pile
