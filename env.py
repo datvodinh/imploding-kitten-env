@@ -394,7 +394,6 @@ def executeMainAction(env,draw_pile,discard_pile,action):
     elif action==14: # Targeted Attack
         #print(f'Player {env[77]} use Targeted Attack!')
         env[89] = 2 #choose player to attack
-    env[94] = -1
 
     
     return env,draw_pile,discard_pile
@@ -634,11 +633,13 @@ def stepEnv(env,draw_pile,discard_pile,action):
                 card = np.random.choice(card_on_player_chosen)
                 env[0:76][card] = env[77]
                 #used card go to Discard Pile
+                env[94] = -1 #reset last action
                 env[89] = 0
             elif last_action==14:
                 env[77] = env[96]
                 env[90] = 2
                 env[89] = 0
+                env[94] = -1 #reset last action
             else:
                 env[89] = 3
         env[76] = 0 
@@ -662,7 +663,7 @@ def stepEnv(env,draw_pile,discard_pile,action):
             type_card = action - 54
             if np.where(env[getCardRange(type_card)[0]:getCardRange(type_card)[1]]==6)[0].shape[0]>0:
                 env[getCardRange(type_card)[0]:getCardRange(type_card)[1]][np.where(env[getCardRange(type_card)[0]:getCardRange(type_card)[1]]==6)[0][0]] = env[77]
-        env[94] = -1
+        env[94] = -1 #reset last action
         env[89] = 0
         env[76] = 0
 
