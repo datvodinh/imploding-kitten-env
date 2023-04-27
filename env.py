@@ -122,20 +122,21 @@ def getAgentState(env,draw_pile,discard_pile):
     
     if phase==1: #Nope phase
 
-        nope_turn = nopeTurn(env[95],reverse=(env[97]==0))
+        nope_turn = nopeTurn(nope_id,reverse=(env[97]==0))
         for i in range(5):
             state[116+i] = env[83:89][int(nope_turn[i])]
-        state[121] = env[83:89][int(env[95])] #lose or not
+        state[121] = env[83:89][int(nope_id)] #lose or not
 
     elif phase==3 and last_action==3: #
         nope_turn = nopeTurn(env[96],reverse=(env[97]==0))
         for i in range(5):
             state[116+i] = env[83:89][int(nope_turn[i])]
         state[121] = env[83:89][int(env[96])] #lose or not
-    elif phase==5: #discard phase
-        state[128:144] = env[100:116]
-        state[144] = env[99]
+    
     else:
+        if phase==5: #discard phase
+            state[128:144] = env[100:116]
+            state[144] = env[99]
         state[37] = env[76]%2 #1 if action been Nope else 0
         if pIdx == int(main_id):
             for i in range(3):
@@ -148,7 +149,7 @@ def getAgentState(env,draw_pile,discard_pile):
         for i in range(5):
             state[116+i] = env[83:89][int(env[78+i])]
         state[121] = env[83:89][int(env[77])] #lose or not
-    
+
     return state
 @njit
 def getValidActions(state):
