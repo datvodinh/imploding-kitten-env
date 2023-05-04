@@ -109,6 +109,8 @@ def getAgentState(env,draw_pile,discard_pile):
     state[17:35] = discard_pile[:18] #discard pile
     state[35] = np.where(draw_pile!=-1)[0].shape[0] #number of card in draw pile
     state[36] = np.where(env[83:89]==1)[0].shape[0]
+    state[37] = env[76]%2 #1 if action been Nope else 0
+
     if phase!=5:
         state[95:100][int(phase)] = 1 #phase
     
@@ -137,7 +139,7 @@ def getAgentState(env,draw_pile,discard_pile):
         if phase==5: #discard phase
             state[128:144] = env[100:116]
             state[144] = env[99]
-        state[37] = env[76]%2 #1 if action been Nope else 0
+
         if pIdx == int(main_id):
             for i in range(3):
                 if env[91+i]!=-1:
@@ -170,7 +172,7 @@ def getValidActions(state):
         elif np.max(state[6:11]) + state[13]>=3 and np.sum(state[122:127])>0:
             list_action[8] = 1
         type_card = (state[0:16]>0).astype(np.float64)
-        if (np.sum(type_card)>=5 or np.sum((state[6:11]>0).astype(np.float64))+state[13]>=5)  and np.sum(state[17:34])>0:#five of a kind
+        if (np.sum(type_card)+state[13]>=5)  and np.sum(state[17:34])>0:#five of a kind
             list_action[9] = True
         list_action[11:13] = (state[11:13]>0).astype(np.float64) #4 new action
         list_action[13:15] = (state[14:16]>0).astype(np.float64) 
@@ -197,7 +199,8 @@ def getValidActions(state):
         elif main_action==8:
             list_action[37:54] = 1
         elif main_action==9:
-            list_action[54:71] = (state[17:34]>0) * 1.0
+            list_action[54:70] = ((state[17:33] - state[128:144])>0) * 1.0
+            list_action[70] = (state[33] > 0) * 1.0 #defuse
     elif state[99]==1: #Alter future phase
         ##list_change = np.array([[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]])
         if state[35]>=3:
@@ -207,7 +210,7 @@ def getValidActions(state):
             list_action[73] = 1
         else:
             list_action[71] = 1
-    elif sum(state[95:100])==0: # discard phase
+    elif np.sum(state[95:100])==0: # discard phase
         last_action = np.argmax(state[101:116])
         if last_action == 7:
             if np.max(state[128:144])==0: #discard no card yet
@@ -393,6 +396,7 @@ def executeMainAction(env,draw_pile,discard_pile,action):
         # print(f'Phase {env[89]} Player {env[77]} shuffle!')
         np.random.shuffle(draw_pile)
         env[89] = 0
+        env[91:94] = -1
     elif action==5: #See the future
         # print(f'Phase {env[89]} Player {env[77]} see the future!')
         if np.where(draw_pile!=-1)[0].shape[0]>=3:
@@ -590,6 +594,7 @@ def stepEnv(env,draw_pile,discard_pile,action):
                 env[90] = 2
                 env[89] = 0
                 env[94] = -1 #reset last action
+                env[91:94] = -1
             else:
                 env[89] = 3
         env[76] = 0 

@@ -15,7 +15,7 @@ SHORT_PATH = ''
 # DRIVE_FOLDER = 'H:/Drive của tôi/AutomaticColab/'
 
 import sys, os
-from setup import SHORT_PATH
+# from setup import SHORT_PATH
 import importlib.util
 game_name = 'Catan'
 

@@ -16,7 +16,7 @@ state[0:17]:number of card player hold:
     [14]: Alter the Future
     [15]: Targeted Attack
     [16]: Defuse
-state[17:35]:number of card in Discard Pile (same index as state[0:12],state[24]:Exploding card)
+state[17:35]:number of card in Discard Pile (same index as state[0:17],state[34]:Exploding card)
 state[35]: number of card left in the Draw Pile
 state[36]: number of player left
 state[37]: 1 if player card is Nope by other player else 0
